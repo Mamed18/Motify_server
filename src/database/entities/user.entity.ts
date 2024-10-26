@@ -4,6 +4,8 @@ import * as bcrypt from 'bcrypt'
 import { UserRoles } from "src/shared/enums/user.enum";
 import { UploadEntity } from "./upload.entity";
 import { FollowEntity } from "./follow.entity";
+import { MusicEntity } from "./music/music.entity";
+import { PlayListEntity } from "./music/playlist.entity";
 
 @Entity('user')
 export class UserEntity extends CommonEntity {
@@ -53,6 +55,12 @@ export class UserEntity extends CommonEntity {
         enum: UserRoles,
     })
     role: UserRoles
+
+    @OneToMany(()=> MusicEntity, music => music.author)
+    music: MusicEntity[]
+
+    @OneToMany(()=> PlayListEntity, playList => playList.creator)
+    playList: PlayListEntity[]
 
     @BeforeInsert()
     async beforeInsert() {

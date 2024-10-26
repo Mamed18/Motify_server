@@ -16,6 +16,7 @@ import { ClsGuard, ClsModule } from 'nestjs-cls';
 import { APP_GUARD } from '@nestjs/core';
 import { FollowModule } from './app/follow/follow.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { GenreModule } from './app/music/genre/genre.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     UserModule,
     UploadModule,
     FollowModule,
+    GenreModule,
     MulterModule.register({
       storage: diskStorage({
         destination: join(__dirname, '..', '..', 'uploads'),
