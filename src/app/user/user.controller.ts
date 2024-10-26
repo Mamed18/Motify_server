@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { ApiBearerAuth, ApiBody, ApiParam, ApiTags, OmitType, PartialType } from "@nestjs/swagger";
 import { SearchUserDto } from "./dto/search-user.dto";
@@ -19,6 +19,7 @@ export class UserController {
         private cls: ClsService,
     ) { }
 
+    //creat user
     @Post()
     @UseGuards(AuthRolesGuard)
     @Roles(UserRoles.ADMIN, UserRoles.SUPERADMIN)
@@ -26,6 +27,7 @@ export class UserController {
         return this.userService.create(body)
     }
 
+    //update user
     @Put('profile/:id')
     @UseGuards(AuthRolesGuard)
     @Roles(UserRoles.ADMIN, UserRoles.SUPERADMIN)
@@ -34,11 +36,21 @@ export class UserController {
         return this.userService.editUser(id, body);
     }
 
+    //delete user
+    @Delete('profile/:id')
+    @UseGuards(AuthRolesGuard)
+    @Roles(UserRoles.ADMIN,UserRoles.SUPERADMIN)
+    async deleteUserById(@Param('id', ParseIntPipe) id: number) {
+        return this.userService.deleteUser(id);
+    }
+
+    //get all users
     @Get()
     getAll() {
         return this.userService.find({})
     }
 
+    //get my profile
     @Get('myProfile')
     @UseGuards(AuthRolesGuard)
     myProfile() {
@@ -46,6 +58,7 @@ export class UserController {
         return this.userService.userProfile(user.id)
     }
 
+    //edit my profile
     @Put('myProfile')
     @UseGuards(AuthRolesGuard)
     async updateProfile(@Body() body: EditProfileDto) {
@@ -56,7 +69,15 @@ export class UserController {
         return this.userService.editUser(user.id, body);
     }
 
+    //delete my profile
+    @Delete('myProfile')
+    @UseGuards(AuthRolesGuard)
+    async deleteMyProfile() {
+        const user = this.cls.get<UserEntity>('user');
+        return this.userService.deleteUser(user.id);
+    }
 
+    //get profile by id
     @Get('profile/:id')
     @ApiParam({ name: 'id', required: true, description: 'ID of the user' })
     async userProfile(@Param('id', ParseIntPipe) id: number) {
@@ -65,10 +86,11 @@ export class UserController {
         return user
     }
 
+    //search
     @Get('search')
     search(@Query() query: SearchUserDto) {
         return this.userService.search(query)
     }
 
-    
+
 }

@@ -31,6 +31,9 @@ export class FollowService {
     async create(body: FollowDto) {
         let myUser = this.cls.get<UserEntity>('user')
         let user = await this.userService.findOne({ id: body.id })
+        if (!user) {
+            throw new NotFoundException('User to follow not found');
+        }
 
         let checkExist = await this.findOne({ isFollowing: { id: myUser.id }, beingFollowed: { id: user.id } })
         if (checkExist) throw new ConflictException('Already following or requested')

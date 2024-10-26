@@ -38,10 +38,10 @@ export class UserEntity extends CommonEntity {
     @Column({ default: 0 })
     followingCount: number
 
-    @OneToMany(() => FollowEntity, follow => follow.isFollowing, { onDelete: 'CASCADE'})
+    @OneToMany(() => FollowEntity, follow => follow.isFollowing)
     following: FollowEntity[];
 
-    @OneToMany(() => FollowEntity, follow => follow.beingFollowed, { onDelete: 'CASCADE'})
+    @OneToMany(() => FollowEntity, follow => follow.beingFollowed)
     followers: FollowEntity[];
 
 

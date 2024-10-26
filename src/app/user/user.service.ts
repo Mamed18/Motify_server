@@ -146,4 +146,48 @@ export class UserService {
             message: 'Profile is successfully updated',
         };
     }
+
+    async deleteUser(id: number) {
+        // Start a transaction
+        await this.userRepo.manager.transaction(async (transactionalEntityManager) => {
+            // Find the user with relations for followers and following
+            let user = await transactionalEntityManager.findOne(UserEntity, {
+                where: { id },
+                relations: ['followers', 'followers.isFollowing', 'following', 'following.beingFollowed']
+            });
+
+            if (!user) throw new NotFoundException('User not found');
+
+            // Decrease followersCount for users who follow this user
+            let followers = user.followers;
+            if (followers && followers.length > 0) {
+                for (const follow of followers) {
+                    const followerUser = follow.isFollowing; // The user who is following this user
+                    followerUser.followingCount--; // This person is following one less person now
+                    await transactionalEntityManager.save(UserEntity, followerUser); // Save the updated following count
+                }
+            }
+
+            // Decrease followingCount for users that this user follows
+            let following = user.following;
+            if (following && following.length > 0) {
+                for (const follow of following) {
+                    const followedUser = follow.beingFollowed; // The user this person was following
+                    followedUser.followersCount--; // This person lost a follower
+                    await transactionalEntityManager.save(UserEntity, followedUser); // Save the updated follower count
+                }
+            }
+
+            // Remove all follow relationships related to the user
+            await transactionalEntityManager.delete(FollowEntity, { beingFollowed: { id } });
+            await transactionalEntityManager.delete(FollowEntity, { isFollowing: { id } });
+
+            // Finally, delete the user
+            await transactionalEntityManager.remove(UserEntity, user);
+        });
+
+        return { status: true, message: 'User and related data deleted successfully' };
+    }
+
+
 }

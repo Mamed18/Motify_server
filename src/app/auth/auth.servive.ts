@@ -31,7 +31,7 @@ export class AuthService {
             console.log('Error sending email', error)
         }
 
-        return this;
+        return user;
     }
 
     async logIn(@Body() body: LogInDto) {
@@ -50,7 +50,7 @@ export class AuthService {
         }
 
         let token = this.jwtService.sign(payload)
-        return { token, user, }
+        return { token, user }
     }
 
 
