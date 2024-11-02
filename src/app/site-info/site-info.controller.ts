@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body, Put } from "@nestjs/common";
+import { Controller, UseGuards, Post, Body, Put, Get } from "@nestjs/common";
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
 import { AuthRolesGuard } from "src/guards/auth-roles.guard";
 import { Roles } from "src/shared/decorators/roles.decorator";
@@ -13,6 +13,11 @@ import { SiteInfoService } from "./site-info.service";
 @Roles(UserRoles.ADMIN, UserRoles.SUPERADMIN)
 export class SiteInfoController {
     constructor(private siteInfoService: SiteInfoService) {}
+
+    @Get()
+    async getSiteInfo(){
+        return await this.siteInfoService.getSiteInfo()
+    }
 
     @Post()
     async createSiteInfo(@Body() createDto: UpdateSiteInfoDto) {
