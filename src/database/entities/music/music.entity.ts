@@ -3,7 +3,6 @@ import { CommonEntity } from "../common.entity";
 import { UserEntity } from "../user.entity";
 import { UploadEntity } from "../upload.entity";
 import { GenreEntity } from "./genre.entity";
-import { PlayListEntity } from "./playlist.entity";
 
 @Entity()
 export class MusicEntity extends CommonEntity{
@@ -25,7 +24,4 @@ export class MusicEntity extends CommonEntity{
     @ManyToMany(()=> GenreEntity, genre=>genre.music,{nullable:true})
     @JoinTable()
     genre: GenreEntity[]
-
-    @ManyToMany(()=> PlayListEntity, playList => playList.music)
-    playList: PlayListEntity[]
 }

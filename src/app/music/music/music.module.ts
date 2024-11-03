@@ -6,11 +6,10 @@ import { MusicService } from "./music.service";
 import { MusicController } from "./music.controller";
 import { UploadEntity } from "src/database/entities/upload.entity";
 import { GenreEntity } from "src/database/entities/music/genre.entity";
-import { PlayListEntity } from "src/database/entities/music/playlist.entity";
 import { UserModule } from "src/app/user/user.module";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([MusicEntity,UploadEntity,GenreEntity,PlayListEntity]),ClsModule,UserModule],
+    imports: [TypeOrmModule.forFeature([MusicEntity,UploadEntity,GenreEntity]),ClsModule,UserModule],
     providers: [MusicService],
     controllers: [MusicController],
     exports: [MusicService]

@@ -6,7 +6,6 @@ import { CreateMusicDto } from "./dto/create-music.dto";
 import { ClsService } from "nestjs-cls";
 import { UploadEntity } from "src/database/entities/upload.entity";
 import { GenreEntity } from "src/database/entities/music/genre.entity";
-import { PlayListEntity } from "src/database/entities/music/playlist.entity";
 import { UserEntity } from "src/database/entities/user.entity";
 import { EditMusicDto } from "./dto/edit-music.dto";
 import { UserRoles } from "src/shared/enums/user.enum";
@@ -24,9 +23,6 @@ export class MusicService {
         @InjectRepository(GenreEntity)
         private genreRepo: Repository<GenreEntity>,
 
-        @InjectRepository(PlayListEntity)
-        private playlistRepo: Repository<PlayListEntity>,
-
         private cls: ClsService,
     ) {}
 
@@ -37,7 +33,7 @@ export class MusicService {
     }
 
     async create(body: CreateMusicDto) {
-        const { title, uploadId, imageId, genreId, playlistId } = body;
+        const { title, uploadId, imageId, genreId } = body;
 
         const upload = await this.uploadRepo.findOne({ where: { id: uploadId } });
         if (!upload || upload.type !== UploadType.AUDIO) {
@@ -50,7 +46,6 @@ export class MusicService {
         }
 
         const genres = genreId ? await this.genreRepo.find({ where: { id: In(genreId) } }) : [];
-        const playlists = playlistId ? await this.playlistRepo.find({ where: { id: In(playlistId) } }) : [];
 
         const author = this.cls.get<UserEntity>('user');
         if (!author) throw new NotFoundException('User not found');
@@ -60,7 +55,6 @@ export class MusicService {
             upload,
             image,
             genre: genres,
-            playList: playlists,
             author,
         });
 
@@ -96,12 +90,6 @@ export class MusicService {
             const genres = await this.genreRepo.find({ where: { id: In(body.genreId) } });
             if (genres.length === 0) throw new NotFoundException("Genre not found.");
             music.genre = genres;
-        }
-
-        if (body.playlistId) {
-            const playlists = await this.playlistRepo.find({ where: { id: In(body.playlistId) } });
-            if (playlists.length === 0) throw new NotFoundException("Playlist not found.");
-            music.playList = playlists;
         }
 
         return await this.musicRepo.save(music);

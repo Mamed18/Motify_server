@@ -19,6 +19,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { GenreModule } from './app/music/genre/genre.module';
 import { MusicModule } from './app/music/music/music.module';
 import { SiteInfoModule } from './app/site-info/site-info.module';
+import { PlaylistModule } from './app/music/playlist/playlist.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { SiteInfoModule } from './app/site-info/site-info.module';
     GenreModule,
     MusicModule,
     SiteInfoModule,
+    PlaylistModule,
     MulterModule.register({
       storage: diskStorage({
         destination: join(__dirname, '..', '..', 'uploads'),

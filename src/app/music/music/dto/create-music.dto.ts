@@ -26,10 +26,4 @@ export class CreateMusicDto {
     @IsInt({ each: true })
     genreId?: number[];
 
-    @Type()
-    @ApiProperty({ isArray: true, type: Number })
-    @IsOptional()
-    @IsArray()
-    @IsInt({ each: true })
-    playlistId?: number[]
 }

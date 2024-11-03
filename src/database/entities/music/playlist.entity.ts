@@ -1,7 +1,7 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne } from "typeorm";
+import { Column, Entity, JoinTable, ManyToOne, OneToMany } from "typeorm";
 import { CommonEntity } from "../common.entity";
 import { UserEntity } from "../user.entity";
-import { MusicEntity } from "./music.entity";
+import { PlayListMusicEntity } from "./playlistmusic.entity";
 
 @Entity()
 export class PlayListEntity extends CommonEntity{
@@ -10,12 +10,11 @@ export class PlayListEntity extends CommonEntity{
     title: string
 
     @Column({nullable:true})
-    describtion: string
+    description: string
 
     @ManyToOne(()=> UserEntity, user => user.playList,{onDelete: 'CASCADE'})
     creator: UserEntity
 
-    @ManyToMany(()=>MusicEntity, music => music.playList)
-    @JoinTable()
-    music: MusicEntity[]
+    @OneToMany(() => PlayListMusicEntity, playlistMusic => playlistMusic.playlist, { cascade: true })
+    musicTracks: PlayListMusicEntity[];
 }
