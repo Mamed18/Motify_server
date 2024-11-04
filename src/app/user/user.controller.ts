@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query, Req, UnauthorizedException, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, NotFoundException, Param, ParseIntPipe, Post, Put, Query, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
-import { ApiBearerAuth, ApiBody, ApiParam, ApiTags, OmitType, PartialType } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiParam, ApiTags} from "@nestjs/swagger";
 import { SearchUserDto } from "./dto/search-user.dto";
 import { AuthRolesGuard } from "src/guards/auth-roles.guard";
 import { ClsService } from "nestjs-cls";
@@ -54,8 +54,7 @@ export class UserController {
     @Get('myProfile')
     @UseGuards(AuthRolesGuard)
     myProfile() {
-        let user = this.cls.get<UserEntity>('user')
-        return this.userService.userProfile(user.id)
+        return this.userService.myProfile()
     }
 
     //edit my profile
@@ -79,10 +78,11 @@ export class UserController {
 
     //get profile by id
     @Get('profile/:id')
+    @UseGuards(AuthRolesGuard)
     @ApiParam({ name: 'id', required: true, description: 'ID of the user' })
     async userProfile(@Param('id', ParseIntPipe) id: number) {
         let user = await this.userService.userProfile(id)
-        if (!user) throw new NotFoundException
+        if (!user) throw new NotFoundException()
         return user
     }
 

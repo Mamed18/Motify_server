@@ -1,16 +1,17 @@
-import { Body, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { Body, ConflictException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { UserEntity } from "src/database/entities/user.entity";
 import { FindManyOptions, FindOptionsWhere, ILike, Not, Repository } from "typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { SearchUserDto } from "./dto/search-user.dto";
-import { SearchUserSelect, UserProfileSelect } from "./user.select";
+import { SearchUserSelect, UserProfileSelect, UserRestrictedSelect } from "./user.select";
 import { FindManyParams } from "src/shared/types/find-params";
 import { EditProfileDto, EditUserDto } from "./dto/edit-user.dto";
 import { FollowEntity } from "src/database/entities/follow.entity";
 import { FollowStatus } from "src/shared/enums/follow-status.enum";
 import { UploadEntity } from "src/database/entities/upload.entity";
 import { UploadType } from "src/shared/enums/upload.enum";
+import { ClsService } from "nestjs-cls";
 
 @Injectable()
 export class UserService {
@@ -21,6 +22,8 @@ export class UserService {
         private followRepo: Repository<FollowEntity>,
         @InjectRepository(UploadEntity)
         private uploadRepo: Repository<UploadEntity>,
+
+        private cls: ClsService,
     ) { }
 
     findOne(params: FindOptionsWhere<UserEntity> | FindOptionsWhere<UserEntity>[]) {
@@ -39,9 +42,73 @@ export class UserService {
         return this.userRepo.find(payload);
     }
 
-    userProfile(id: number) {
-        return this.userRepo.findOne({ where: { id }, relations: ['following.beingFollowed', 'followers.isFollowing'], select: UserProfileSelect, })
+    async myProfile(): Promise<UserEntity> {
+        const currentUser = this.cls.get<UserEntity>('user');
+        if (!currentUser) {
+            throw new UnauthorizedException('User not authenticated');
+        }
+    
+        const user = await this.userRepo.findOne({
+            where: { id: currentUser.id },
+            relations: ['profilePicture', 'following.beingFollowed', 'followers.isFollowing', 'music', 'playList'],
+            select: UserProfileSelect,
+        });
+    
+        if (!user) {
+            throw new NotFoundException('Profile not found');
+        }
+    
+        return user;
     }
+    
+    async userProfile(id: number) {
+        const currentUser = await this.cls.get<UserEntity>('user');
+    
+        const user = await this.userRepo.findOne({
+            where: { id }
+        });
+
+        if (currentUser.id==user.id){
+            return this.userRepo.findOne({
+                where: { id },
+                relations: ['following.beingFollowed', 'followers.isFollowing', 'music', 'playList'],
+                select: UserProfileSelect,
+            });
+        }
+    
+        if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    
+        if (!user.isPrivate) {
+            return this.userRepo.findOne({
+                where: { id },
+                relations: ['following.beingFollowed', 'followers.isFollowing', 'music', 'playList'],
+                select: UserProfileSelect,
+            });
+        }
+    
+        const follow = await this.followRepo.find({
+            where: {
+                beingFollowed: { id },
+                isFollowing: { id: currentUser.id },
+                status: FollowStatus.FOLLOWING,
+            },
+        });
+    
+        if (follow.length > 0) {
+            return this.userRepo.findOne({
+                where: { id },
+                relations: ['following.beingFollowed', 'followers.isFollowing', 'music', 'playList'],
+                select: UserProfileSelect,
+            });
+        }
+        
+        return this.userRepo.findOne({
+            where: { id },
+            relations: ['following.beingFollowed', 'followers.isFollowing'],
+            select: UserRestrictedSelect,
+        });
+    }
+    
 
     async create(@Body() body: Partial<CreateUserDto>) {
         let checkUserName = await this.findOne({ userName: body.userName });

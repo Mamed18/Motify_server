@@ -7,11 +7,13 @@ import { FollowEntity } from "src/database/entities/follow.entity";
 import { FollowModule } from "../follow/follow.module";
 import { UploadEntity } from "src/database/entities/upload.entity";
 import { UploadModule } from "../upload/upload.module";
+import { ClsModule } from "nestjs-cls";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([UserEntity, FollowEntity, UploadEntity]),
         FollowModule,
+        ClsModule,
         forwardRef(() => UploadModule)
     ],
     controllers: [UserController],
